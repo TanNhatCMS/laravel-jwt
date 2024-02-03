@@ -104,7 +104,7 @@ class AuthController extends Controller
      *
      * @return JsonResponse
      */
-    public function userProfile() {
+    public function Profile() {
         $user = auth('api')->user();
 
         if ($user) {
@@ -112,9 +112,24 @@ class AuthController extends Controller
         } else {
             echo 'You are not logged in.';
         }
-        return response()->json(auth()->user());
     }
-
+    public  function forgotPassword(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+        ]);
+        if($validator->fails()){
+            return response()->json($validator->errors()->toJson(), 400);
+        }
+        $user = User::where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+        return response()->json([
+            'message' => 'Reset password link sent on your email.'
+        ], 200);
+    }
     /**
      * Get the token array structure.
      *
@@ -135,7 +150,7 @@ class AuthController extends Controller
         try {
             $validator = Validator::make($request->all(), [
                 'old_password' => 'required|string|min:6',
-                'new_password' => 'required|string|confirmed|min:6',
+                'new_password' => 'required|string|min:6',
             ]);
 
             if($validator->fails()){
